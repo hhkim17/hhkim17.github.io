@@ -18,6 +18,20 @@
   --float: 0 14px 40px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 :root[data-theme="pink"] {
+  --bg: #fff6f9; --bg-3: #fdeff4;
+  --line: #f6dce7; --line-soft: #fbeaf1;
+  --text: #46283a; --text-2: #72526a; --text-3: #85647a;
+  --accent: #ad3a70; --accent-soft: #fde6f0;
+  --fill: #f9c6da; --ink: #5c1a3c; --glow: #ffe8d9;
+}
+:root[data-theme="lime"] {
+  --bg: #f6fbef; --bg-3: #eef6e2;
+  --line: #dcebc8; --line-soft: #e9f3dc;
+  --text: #2c3b22; --text-2: #546848; --text-3: #637555;
+  --accent: #47731c; --accent-soft: #e8f6d6;
+  --fill: #c9ea9f; --ink: #2b4a10; --glow: #fbf5c8;
+}
+:root[data-theme="blossom"] {
   /* 벚꽃 — 꽃잎은 바탕에, 나무껍질의 자줏빛은 글자에 */
   --bg: #fff8f9; --bg-2: #fffdfd; --bg-3: #fdf0f3;
   --line: #f5dde4; --line-soft: #faeaee;
@@ -27,7 +41,7 @@
   --scene: #fbdbe5;
   --radius: 22px;
 }
-:root[data-theme="lime"] {
+:root[data-theme="forest"] {
   /* 숲 — 이끼색 안개 위에 짙은 전나무색, 주 버튼까지 짙게 눌러 벚꽃과 무게를 달리한다 */
   --bg: #f0f4ec; --bg-2: #fcfdf9; --bg-3: #e6eee0;
   --line: #d2dfc9; --line-soft: #e2eadb;
@@ -67,6 +81,20 @@
     --float: 0 14px 40px rgb(0 0 0 / .42);
   }
   :root[data-theme="pink"] {
+    --bg: #1c1218; --bg-2: #281a22; --bg-3: #33222c;
+    --line: #4a3340; --line-soft: #3b2933;
+    --text: #f8e8ef; --text-2: #d0b0c0; --text-3: #b795a7;
+    --accent: #f6b6d0; --accent-soft: #4a2439;
+    --fill: #f9c6da; --ink: #5c1a3c; --glow: #3a2620;
+  }
+  :root[data-theme="lime"] {
+    --bg: #131a0f; --bg-2: #1c2617; --bg-3: #25311e;
+    --line: #37472d; --line-soft: #2c3a24;
+    --text: #ecf5e2; --text-2: #b4c6a4; --text-3: #9aad8a;
+    --accent: #c0e78f; --accent-soft: #2c421a;
+    --fill: #c9ea9f; --ink: #2b4a10; --glow: #2f2d14;
+  }
+  :root[data-theme="blossom"] {
     /* 밤벚꽃 */
     --bg: #1a1219; --bg-2: #251a24; --bg-3: #2f222e;
     --line: #4a3546; --line-soft: #3b2a38;
@@ -75,7 +103,7 @@
     --fill: #ffc7d7; --ink: #5e1b38; --glow: #2a2036;
     --scene: #3f2636;
   }
-  :root[data-theme="lime"] {
+  :root[data-theme="forest"] {
     /* 밤의 숲 */
     --bg: #0e1712; --bg-2: #16211a; --bg-3: #1e2c23;
     --line: #304235; --line-soft: #26362b;
@@ -110,23 +138,23 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 /* 테마 풍경 — 카드 뒤에 가만히 두고, 글자가 얹혀도 대비가 유지되는 색(--scene)만 쓴다 */
-:root:is([data-theme="sky"], [data-theme="pink"], [data-theme="lime"]) body::before {
+:root:is([data-theme="city"], [data-theme="blossom"], [data-theme="forest"]) body::before {
   content: ''; position: fixed; z-index: -1; pointer-events: none; background: var(--scene);
 }
-:root[data-theme="pink"] body::before {
+:root[data-theme="blossom"] body::before {
   top: 52px; right: 0; width: min(78vw, 980px); aspect-ratio: 900 / 460;
   -webkit-mask: url(scene-blossom.svg) right top / contain no-repeat; mask: url(scene-blossom.svg) right top / contain no-repeat;
 }
-:root:is([data-theme="sky"], [data-theme="lime"]) body::before { left: 0; right: 0; bottom: 0; height: min(44vh, 400px); }
-:root[data-theme="lime"] body::before {
+:root:is([data-theme="city"], [data-theme="forest"]) body::before { left: 0; right: 0; bottom: 0; height: min(44vh, 400px); }
+:root[data-theme="forest"] body::before {
   -webkit-mask: url(scene-forest.svg) left bottom / auto 100% repeat-x; mask: url(scene-forest.svg) left bottom / auto 100% repeat-x;
 }
-:root[data-theme="sky"] { --radius: 12px; }
-:root[data-theme="sky"] body::before {
+:root[data-theme="city"] { --radius: 12px; }
+:root[data-theme="city"] body::before {
   -webkit-mask: url(scene-city.svg) left bottom / auto 100% repeat-x; mask: url(scene-city.svg) left bottom / auto 100% repeat-x;
 }
 /* 도시는 내려앉는 것 대신 창문에 불이 켜진다 */
-:root[data-theme="sky"] body::after {
+:root[data-theme="city"] body::after {
   content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: min(44vh, 400px); z-index: -1; pointer-events: none;
   background: var(--lights);
   -webkit-mask: url(scene-city-lights.svg) left bottom / auto 100% repeat-x; mask: url(scene-city-lights.svg) left bottom / auto 100% repeat-x;
@@ -134,21 +162,21 @@ body {
 }
 @keyframes lightsOn { from { opacity: 0; } }
 /* 켜거나 고를 때 한 번만 꽃잎·나뭇잎이 내려앉고 사라진다. 계속 날리면 표를 읽는 데 방해된다 */
-:root:is([data-theme="pink"], [data-theme="lime"]) body::after {
+:root:is([data-theme="blossom"], [data-theme="forest"]) body::after {
   content: ''; position: fixed; inset: 0; z-index: 10; pointer-events: none; opacity: 0;
   background-size: 960px auto, 1200px auto;
   animation: settle 13s linear both;
 }
-:root[data-theme="pink"] body::after { background-image: url(fall-petal.svg), url(fall-petal.svg); }
-:root[data-theme="lime"] body::after { background-image: url(fall-leaf.svg), url(fall-leaf.svg); }
+:root[data-theme="blossom"] body::after { background-image: url(fall-petal.svg), url(fall-petal.svg); }
+:root[data-theme="forest"] body::after { background-image: url(fall-leaf.svg), url(fall-leaf.svg); }
 @keyframes settle {
   0% { opacity: 0; background-position: 0 -260px, 380px -180px; }
   12%, 80% { opacity: .9; }
   100% { opacity: 0; background-position: 150px 620px, 180px 1020px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  :root:is([data-theme="pink"], [data-theme="lime"]) body::after { display: none; }
-  :root[data-theme="sky"] body::after { animation: none; }
+  :root:is([data-theme="blossom"], [data-theme="forest"]) body::after { display: none; }
+  :root[data-theme="city"] body::after { animation: none; }
 }
 h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -0.01em; }
 a { color: var(--accent); }
@@ -201,7 +229,8 @@ code { background: var(--bg-3); padding: 1px 5px; border-radius: 4px; font-size:
   display: grid; place-items: center;
 }
 .swatch i { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgb(0 0 0 / .1); transition: transform .15s; }
-.swatch svg { width: 14px; height: 14px; }
+.swatch svg { display: none; width: 14px; height: 14px; }
+.swatch.special svg { display: block; }
 .swatch:hover i { transform: scale(1.12); }
 .swatch[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--accent); }
 .swatch:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
