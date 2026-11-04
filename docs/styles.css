@@ -494,7 +494,7 @@ details.help th { text-align: left; }
 .source-actions .fineprint { margin-left: 2px; }
 
 /* ── 귀여운 포인트 ─────────────────────────── */
-:root { --mascot: url(mascot-house.svg); --mini: url(mini-house.svg); --spring: cubic-bezier(.34, 1.56, .64, 1); }
+:root { --mascot: url(mascot-house.svg); --mini: url(mini-heart.svg); --spring: cubic-bezier(.34, 1.56, .64, 1); }
 :root[data-theme="city"] { --mascot: url(mascot-cat.svg); --mini: url(mini-star.svg); }
 :root[data-theme="blossom"] { --mascot: url(mascot-bird.svg); --mini: url(mini-flower.svg); }
 :root[data-theme="forest"] { --mascot: url(mascot-squirrel.svg); --mini: url(mini-leaf.svg); }
