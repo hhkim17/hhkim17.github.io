@@ -1,7 +1,7 @@
 // 서울 청약 대시보드 — 프론트엔드
-import * as Sync from './sync.js?v=055bc5fd';
-import * as Std from './standards.js?v=055bc5fd';
-import * as Rank from './rank.js?v=055bc5fd';
+import * as Sync from './sync.js?v=c1af63ab';
+import * as Std from './standards.js?v=c1af63ab';
+import * as Rank from './rank.js?v=c1af63ab';
 
 const $ = (s) => document.querySelector(s);
 // 화면 조각이 하나라도 빠져 있으면(브라우저에 남은 옛 HTML 등) 예외가 나서
