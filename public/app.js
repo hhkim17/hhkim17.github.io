@@ -1479,6 +1479,20 @@ $('#fSearch').oninput = (e) => {
 };
 $('#fSearchClear').onclick = () => { $('#fSearch').value = ''; filters.q = ''; $('#fSearchClear').hidden = true; renderAll(); };
 
+// 테마 색 — 개인 취향이라 계정에 올리지 않고 이 브라우저에만 둔다
+const swatches = document.querySelectorAll('[data-pick-theme]');
+function paintTheme() {
+  for (const b of swatches) b.setAttribute('aria-pressed', String(b.dataset.pickTheme === document.documentElement.dataset.theme));
+}
+for (const b of swatches) {
+  b.onclick = () => {
+    document.documentElement.dataset.theme = b.dataset.pickTheme;
+    try { localStorage.setItem('cheongyak.theme', b.dataset.pickTheme); } catch {}
+    paintTheme();
+  };
+}
+paintTheme();
+
 $('#fReset').onclick = () => {
   filters = defaultFilters();
   $('#fSearch').value = '';

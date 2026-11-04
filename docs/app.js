@@ -1,7 +1,7 @@
 // 서울 청약 대시보드 — 프론트엔드
-import * as Sync from './sync.js?v=2a9eb581';
-import * as Std from './standards.js?v=2a9eb581';
-import * as Rank from './rank.js?v=2a9eb581';
+import * as Sync from './sync.js?v=339f12f8';
+import * as Std from './standards.js?v=339f12f8';
+import * as Rank from './rank.js?v=339f12f8';
 
 const $ = (s) => document.querySelector(s);
 // 화면 조각이 하나라도 빠져 있으면(브라우저에 남은 옛 HTML 등) 예외가 나서
@@ -1478,6 +1478,20 @@ $('#fSearch').oninput = (e) => {
   searchTimer = setTimeout(renderAll, 180);   // 타이핑이 멈추면 그린다
 };
 $('#fSearchClear').onclick = () => { $('#fSearch').value = ''; filters.q = ''; $('#fSearchClear').hidden = true; renderAll(); };
+
+// 테마 색 — 개인 취향이라 계정에 올리지 않고 이 브라우저에만 둔다
+const swatches = document.querySelectorAll('[data-pick-theme]');
+function paintTheme() {
+  for (const b of swatches) b.setAttribute('aria-pressed', String(b.dataset.pickTheme === document.documentElement.dataset.theme));
+}
+for (const b of swatches) {
+  b.onclick = () => {
+    document.documentElement.dataset.theme = b.dataset.pickTheme;
+    try { localStorage.setItem('cheongyak.theme', b.dataset.pickTheme); } catch {}
+    paintTheme();
+  };
+}
+paintTheme();
 
 $('#fReset').onclick = () => {
   filters = defaultFilters();

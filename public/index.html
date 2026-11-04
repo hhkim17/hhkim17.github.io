@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>서울 청약 대시보드</title>
 <link rel="stylesheet" href="styles.css">
+<script>try { document.documentElement.dataset.theme = localStorage.getItem('cheongyak.theme') || 'sky'; } catch {}</script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🏙️</text></svg>">
 </head>
 <body>
@@ -40,6 +41,12 @@
       </div>
     </div>
     <div class="topbar-actions">
+      <div class="theme-pick" role="group" aria-label="테마 색">
+        <button class="swatch" data-pick-theme="sky" aria-label="하늘색" title="하늘색"><i style="background:#aeddf7"></i></button>
+        <button class="swatch" data-pick-theme="pink" aria-label="분홍색" title="분홍색"><i style="background:#f9c6da"></i></button>
+        <button class="swatch" data-pick-theme="lime" aria-label="연두색" title="연두색"><i style="background:#c9ea9f"></i></button>
+        <button class="swatch" data-pick-theme="yellow" aria-label="노란색" title="노란색"><i style="background:#fde68f"></i></button>
+      </div>
       <button id="btnProfile" class="ghost">내 조건 설정</button>
       <button id="btnMail" class="ghost">메일 알림</button>
       <button id="btnAuth" class="ghost">로그인</button>
