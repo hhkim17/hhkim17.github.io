@@ -53,7 +53,7 @@ GitHub Secrets 에 들어 있는 것: `APPLYHOME_SERVICE_KEY`, `MAIL_USERNAME`, 
 
 | | 사는 곳 | 하는 일 |
 |---|---|---|
-| 사이트 | GitHub Pages — https://cheongyak.iverkim.com/ | 사람들이 보는 화면 |
+| 사이트 | GitHub Pages — https://hhkim17.github.io/seoul-cheongyak/ | 사람들이 보는 화면 |
 | 데이터 수집 | GitHub Actions `청약 데이터 갱신` | 몇 시간마다 기관에서 공고를 받아 `docs/data/listings.json` 로 커밋 |
 | 메일 알림 | 같은 워크플로의 뒷부분 | 새 공고가 조건에 맞으면 발송 |
 | 로컬 서버 | `./start.sh` | 코드 고칠 때만. 안 띄워도 사이트는 멀쩡함 |
@@ -145,7 +145,7 @@ Settings → Collaborators 에 그 계정을 추가합니다.
 이어받은 뒤 제대로 돌아가는지 한 번에 보려면:
 
 ```bash
-curl -s https://cheongyak.iverkim.com/data/listings.json | node -e '
+curl -s https://hhkim17.github.io/seoul-cheongyak/data/listings.json | node -e '
 const d=JSON.parse(require("fs").readFileSync(0,"utf8"));
 console.log("공고", d.listings.length, "건 |", new Date(d.builtAt).toLocaleString("ko-KR"));
 console.log("출처 정상", (d.sources||[]).filter(s=>s.state==="ok").length+"/"+(d.sources||[]).length);

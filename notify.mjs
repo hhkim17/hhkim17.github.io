@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(ROOT, 'notify');
-const SITE = 'https://cheongyak.iverkim.com/';
+const SITE = 'https://hhkim17.github.io/seoul-cheongyak/';
 
 const read = (p) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; } };
 
