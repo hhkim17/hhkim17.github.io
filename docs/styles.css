@@ -2,7 +2,7 @@
   color-scheme: light;
   --bg: #f3f9fe; --bg-2: #ffffff; --bg-3: #e9f4fc;
   --line: #d3e7f5; --line-soft: #e4f1fa;
-  --text: #24384a; --text-2: #4c6579; --text-3: #587084;
+  --text: #24384a; --text-2: #456074; --text-3: #4e667a;
   --accent: #1c6a9f; --accent-soft: #e0f1fc;
   --fill: #aeddf7; --ink: #123a56; --glow: #e8e2ff;
   --good: #1a7a53; --good-soft: #e2f6ec;
@@ -13,6 +13,7 @@
   --wash-b: color-mix(in srgb, var(--glow) 70%, transparent);
   --scrim: color-mix(in srgb, var(--text) 24%, transparent);
   --radius: 18px;
+  --scene: #d9e9f4; --lights: #fff3c4;
   --soft: 0 4px 18px color-mix(in srgb, var(--accent) 7%, transparent);
   --float: 0 14px 40px color-mix(in srgb, var(--accent) 15%, transparent);
 }
@@ -29,6 +30,28 @@
   --text: #2c3b22; --text-2: #546848; --text-3: #637555;
   --accent: #47731c; --accent-soft: #e8f6d6;
   --fill: #c9ea9f; --ink: #2b4a10; --glow: #fbf5c8;
+}
+:root[data-theme="blossom"] {
+  /* 벚꽃 — 꽃잎은 바탕에, 나무껍질의 자줏빛은 글자에 */
+  --bg: #fff8f9; --bg-2: #fffdfd; --bg-3: #fdf0f3;
+  --line: #f5dde4; --line-soft: #faeaee;
+  --text: #4a2b36; --text-2: #70505c; --text-3: #7c5a67;
+  --accent: #a8345f; --accent-soft: #fde7ee;
+  --fill: #ffc7d7; --ink: #5e1b38; --glow: #fff0e3;
+  --scene: #fbdbe5;
+  --radius: 22px;
+}
+:root[data-theme="forest"] {
+  /* 숲 — 이끼색 안개 위에 짙은 전나무색, 주 버튼까지 짙게 눌러 벚꽃과 무게를 달리한다 */
+  --bg: #f0f4ec; --bg-2: #fcfdf9; --bg-3: #e6eee0;
+  --line: #d2dfc9; --line-soft: #e2eadb;
+  --text: #1f3325; --text-2: #40594a; --text-3: #4a6152;
+  --accent: #2c6641; --accent-soft: #dcebd9;
+  --fill: #2f6b45; --ink: #f5faf0; --glow: #f6f0cf;
+  --wash-a: color-mix(in srgb, var(--glow) 75%, transparent);
+  --wash-b: rgb(185 211 174 / .35);
+  --scene: #d6e3cf;
+  --radius: 14px;
 }
 :root[data-theme="yellow"] {
   --bg: #fffcee; --bg-3: #fdf6da;
@@ -50,6 +73,7 @@
     --warn: #f0c864; --warn-soft: #3f3110;
     --hot: #ff9d94; --hot-soft: #45211d;
     --on-accent: var(--ink);
+    --scene: #1c2a35; --lights: #3a3a2c;
     --wash-a: color-mix(in srgb, var(--accent) 9%, transparent);
     --wash-b: color-mix(in srgb, var(--glow) 55%, transparent);
     --scrim: rgb(0 0 0 / .55);
@@ -69,6 +93,26 @@
     --text: #ecf5e2; --text-2: #b4c6a4; --text-3: #9aad8a;
     --accent: #c0e78f; --accent-soft: #2c421a;
     --fill: #c9ea9f; --ink: #2b4a10; --glow: #2f2d14;
+  }
+  :root[data-theme="blossom"] {
+    /* 밤벚꽃 */
+    --bg: #1a1219; --bg-2: #251a24; --bg-3: #2f222e;
+    --line: #4a3546; --line-soft: #3b2a38;
+    --text: #fbeef2; --text-2: #d6b7c4; --text-3: #bc9aaa;
+    --accent: #ffb7cd; --accent-soft: #4b2439;
+    --fill: #ffc7d7; --ink: #5e1b38; --glow: #2a2036;
+    --scene: #3f2636;
+  }
+  :root[data-theme="forest"] {
+    /* 밤의 숲 */
+    --bg: #0e1712; --bg-2: #16211a; --bg-3: #1e2c23;
+    --line: #304235; --line-soft: #26362b;
+    --text: #e9f2e6; --text-2: #afc4ad; --text-3: #93aa92;
+    --accent: #a8d8a0; --accent-soft: #213c2a;
+    --fill: #a8d8a0; --ink: #12301c; --glow: #1c2c22;
+    --wash-a: color-mix(in srgb, var(--accent) 8%, transparent);
+    --wash-b: color-mix(in srgb, var(--glow) 60%, transparent);
+    --scene: #1a2a20;
   }
   :root[data-theme="yellow"] {
     --bg: #1a1709; --bg-2: #252110; --bg-3: #2f2a16;
@@ -92,6 +136,47 @@ body {
   color: var(--text);
   font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+/* 테마 풍경 — 카드 뒤에 가만히 두고, 글자가 얹혀도 대비가 유지되는 색(--scene)만 쓴다 */
+:root:is([data-theme="city"], [data-theme="blossom"], [data-theme="forest"]) body::before {
+  content: ''; position: fixed; z-index: -1; pointer-events: none; background: var(--scene);
+}
+:root[data-theme="blossom"] body::before {
+  top: 52px; right: 0; width: min(78vw, 980px); aspect-ratio: 900 / 460;
+  -webkit-mask: url(scene-blossom.svg) right top / contain no-repeat; mask: url(scene-blossom.svg) right top / contain no-repeat;
+}
+:root:is([data-theme="city"], [data-theme="forest"]) body::before { left: 0; right: 0; bottom: 0; height: min(44vh, 400px); }
+:root[data-theme="forest"] body::before {
+  -webkit-mask: url(scene-forest.svg) left bottom / auto 100% repeat-x; mask: url(scene-forest.svg) left bottom / auto 100% repeat-x;
+}
+:root[data-theme="city"] { --radius: 12px; }
+:root[data-theme="city"] body::before {
+  -webkit-mask: url(scene-city.svg) left bottom / auto 100% repeat-x; mask: url(scene-city.svg) left bottom / auto 100% repeat-x;
+}
+/* 도시는 내려앉는 것 대신 창문에 불이 켜진다 */
+:root[data-theme="city"] body::after {
+  content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: min(44vh, 400px); z-index: -1; pointer-events: none;
+  background: var(--lights);
+  -webkit-mask: url(scene-city-lights.svg) left bottom / auto 100% repeat-x; mask: url(scene-city-lights.svg) left bottom / auto 100% repeat-x;
+  animation: lightsOn 2.4s ease-out both;
+}
+@keyframes lightsOn { from { opacity: 0; } }
+/* 켜거나 고를 때 한 번만 꽃잎·나뭇잎이 내려앉고 사라진다. 계속 날리면 표를 읽는 데 방해된다 */
+:root:is([data-theme="blossom"], [data-theme="forest"]) body::after {
+  content: ''; position: fixed; inset: 0; z-index: 10; pointer-events: none; opacity: 0;
+  background-size: 960px auto, 1200px auto;
+  animation: settle 13s linear both;
+}
+:root[data-theme="blossom"] body::after { background-image: url(fall-petal.svg), url(fall-petal.svg); }
+:root[data-theme="forest"] body::after { background-image: url(fall-leaf.svg), url(fall-leaf.svg); }
+@keyframes settle {
+  0% { opacity: 0; background-position: 0 -260px, 380px -180px; }
+  12%, 80% { opacity: .9; }
+  100% { opacity: 0; background-position: 150px 620px, 180px 1020px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:is([data-theme="blossom"], [data-theme="forest"]) body::after { display: none; }
+  :root[data-theme="city"] body::after { animation: none; }
 }
 h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -0.01em; }
 a { color: var(--accent); }
@@ -143,7 +228,11 @@ code { background: var(--bg-3); padding: 1px 5px; border-radius: 4px; font-size:
   flex: none; width: 30px; height: 30px; padding: 0; border: 0; background: none; border-radius: 50%;
   display: grid; place-items: center;
 }
-.swatch i { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgb(0 0 0 / .1); transition: transform .15s; }
+.swatch i { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgb(0 0 0 / .1); transition: transform .15s; }
+.swatch svg { width: 14px; height: 14px; opacity: 0; transition: opacity .15s; }
+/* 다시 누르면 무엇이 되는지 미리 비쳐 보인다 */
+.swatch:hover svg, .swatch:focus-visible svg { opacity: .45; }
+.swatch.special svg { opacity: 1; }
 .swatch:hover i { transform: scale(1.12); }
 .swatch[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--accent); }
 .swatch:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -403,3 +492,55 @@ details.help th { text-align: left; }
 .source-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 4px; }
 .source-actions button { font-size: 12.5px; padding: 7px 12px; }
 .source-actions .fineprint { margin-left: 2px; }
+
+/* ── 귀여운 포인트 ─────────────────────────── */
+:root { --mascot: url(mascot-house.svg); --mini: url(mini-house.svg); --spring: cubic-bezier(.34, 1.56, .64, 1); }
+:root[data-theme="city"] { --mascot: url(mascot-cat.svg); --mini: url(mini-star.svg); }
+:root[data-theme="blossom"] { --mascot: url(mascot-bird.svg); --mini: url(mini-flower.svg); }
+:root[data-theme="forest"] { --mascot: url(mascot-squirrel.svg); --mini: url(mini-leaf.svg); }
+
+/* 가점 카드 위에 앉아 있는 마스코트 */
+#meCard { position: relative; }
+#meCard::before {
+  content: ''; position: absolute; top: -15px; right: 14px; width: 54px; height: 54px; pointer-events: none;
+  background: var(--mascot) center / contain no-repeat; transform-origin: bottom; transition: transform .35s var(--spring);
+}
+#meCard:hover::before { transform: translateY(-4px) rotate(-5deg); }
+
+/* 공고 카드에 올리면 위쪽 모서리에 작은 스티커가 올라온다 */
+.card { position: relative; }
+.card::before {
+  content: ''; position: absolute; top: -9px; left: 20px; width: 20px; height: 20px; pointer-events: none;
+  background: var(--accent); -webkit-mask: var(--mini) center / contain no-repeat; mask: var(--mini) center / contain no-repeat;
+  opacity: 0; transform: translateY(8px) scale(.5); transition: opacity .15s, transform .35s var(--spring);
+}
+.card:hover::before { opacity: 1; transform: rotate(-12deg); }
+
+/* 고른 칩의 작은 표시, 누를 때 말랑한 반응 */
+.chip.on::before {
+  content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 4px; background: currentColor;
+  -webkit-mask: var(--mini) center / contain no-repeat; mask: var(--mini) center / contain no-repeat;
+}
+.chip, .corner-tab, button.primary, .ghost { transition: transform .25s var(--spring), border-color .15s, background .15s; }
+.chip:active, .corner-tab:active, button.primary:active, .ghost:active { transform: scale(.94); }
+
+/* 스크랩하면 작은 표시가 떠오른다 */
+.star { position: relative; }
+.star.pop::after {
+  content: ''; position: absolute; left: 50%; top: -2px; width: 12px; height: 12px; margin-left: -6px; pointer-events: none;
+  background: var(--accent); -webkit-mask: var(--mini) center / contain no-repeat; mask: var(--mini) center / contain no-repeat;
+  animation: floatUp .7s ease-out both;
+}
+@keyframes floatUp { to { opacity: 0; transform: translateY(-24px) scale(1.3); } }
+
+/* 결과가 없을 때도 마스코트가 곁에 있다 */
+#empty::before {
+  content: ''; display: block; width: 76px; height: 76px; margin: 0 auto 14px;
+  background: var(--mascot) center / contain no-repeat; animation: bob 1.8s ease-in-out infinite alternate;
+}
+@keyframes bob { to { transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) {
+  #empty::before, .star.pop::after { animation: none; }
+  .star.pop::after { display: none; }
+  #meCard::before, .card::before, .chip, .corner-tab, button.primary, .ghost { transition: none; }
+}
