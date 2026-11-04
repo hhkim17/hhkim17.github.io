@@ -1391,7 +1391,7 @@ $('#btnRefresh').onclick = () => load(true);   // 목록만 다시 받기 (빠�
 // 정적 배포에서는 화면이 직접 기관에 물어볼 수 없다. 두 가지를 나눠 둔다.
 //  · 새로고침 — 서버에 올라와 있는 최신 스냅샷을 다시 받는다 (브라우저 캐시 우회)
 //  · 다시 수집 — 수집 작업을 돌리는 GitHub 작업 페이지를 연다
-const RECOLLECT_URL = 'https://github.com/hhkim17/seoul-cheongyak/actions/workflows/refresh.yml';
+const RECOLLECT_URL = 'https://github.com/hhkim17/hhkim17.github.io/actions/workflows/refresh.yml';
 
 if ($('#btnReload')) $('#btnReload').onclick = async () => {
   const b = $('#btnReload'); const msg = $('#reloadMsg');

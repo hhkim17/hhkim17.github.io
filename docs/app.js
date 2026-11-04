@@ -1,7 +1,7 @@
 // 서울 청약 대시보드 — 프론트엔드
-import * as Sync from './sync.js?v=2857ebc0';
-import * as Std from './standards.js?v=2857ebc0';
-import * as Rank from './rank.js?v=2857ebc0';
+import * as Sync from './sync.js?v=7566541d';
+import * as Std from './standards.js?v=7566541d';
+import * as Rank from './rank.js?v=7566541d';
 
 const $ = (s) => document.querySelector(s);
 // 화면 조각이 하나라도 빠져 있으면(브라우저에 남은 옛 HTML 등) 예외가 나서
@@ -1391,7 +1391,7 @@ $('#btnRefresh').onclick = () => load(true);   // 목록만 다시 받기 (빠�
 // 정적 배포에서는 화면이 직접 기관에 물어볼 수 없다. 두 가지를 나눠 둔다.
 //  · 새로고침 — 서버에 올라와 있는 최신 스냅샷을 다시 받는다 (브라우저 캐시 우회)
 //  · 다시 수집 — 수집 작업을 돌리는 GitHub 작업 페이지를 연다
-const RECOLLECT_URL = 'https://github.com/hhkim17/seoul-cheongyak/actions/workflows/refresh.yml';
+const RECOLLECT_URL = 'https://github.com/hhkim17/hhkim17.github.io/actions/workflows/refresh.yml';
 
 if ($('#btnReload')) $('#btnReload').onclick = async () => {
   const b = $('#btnReload'); const msg = $('#reloadMsg');
