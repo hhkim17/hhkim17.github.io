@@ -1456,6 +1456,21 @@ $('#btnKakao').onclick = async () => {
 };
 
 $('#btnSignOut').onclick = async () => { await Sync.signOut(); renderAuth(null); };
+$('#btnDeleteAccount').onclick = async () => {
+  if (!confirm('탈퇴하면 계정과 저장된 조건·스크랩·메일 알림 설정이 모두 지워지고 되돌릴 수 없습니다.\n정말 탈퇴할까요?')) return;
+  const msg = $('#syncMsg');
+  clearTimeout(syncTimer);   // 삭제 뒤에 밀린 저장이 나가지 않게 한다
+  try {
+    await Sync.deleteAccount();
+    for (const k of ['profile', 'scraps', 'watch', 'notifyEmail', 'alertEmail']) localStorage.removeItem(`cheongyak.${k}`);
+    alert('탈퇴가 끝났습니다. 이용해 주셔서 감사합니다.');
+    location.reload();
+  } catch (e) {
+    msg.className = 'msg err';
+    msg.textContent = '탈퇴하지 못했습니다. 잠시 뒤 다시 시도하거나 joyhwanc@gmail.com 으로 알려 주세요.';
+    console.warn('탈퇴 실패:', e.message);
+  }
+};
 
 $('#btnSyncNow').onclick = async () => {
   const msg = $('#syncMsg'); msg.className = 'msg'; msg.textContent = '동기화 중…';

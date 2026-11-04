@@ -29,3 +29,21 @@ create policy "본인 행 수정" on public.profiles
 
 -- 알림 대상자를 빠르게 찾기 위한 인덱스
 create index if not exists profiles_notify_idx on public.profiles (notify_email) where notify_email;
+
+-- 회원 탈퇴: 로그인한 본인 계정만 지운다. profiles 는 on delete cascade 로 함께 지워진다.
+create or replace function public.delete_my_account()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated';
+  end if;
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
+revoke all on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;
