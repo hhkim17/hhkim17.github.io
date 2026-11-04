@@ -43,6 +43,9 @@ try {
   process.exit(1);
 }
 
+// 공개 저장소라 Actions 로그를 누구나 읽는다 — 주소를 그대로 찍지 않는다
+const maskEmail = (e) => String(e).replace(/^(.).*(@.*)$/, '$1***$2');
+
 const outbox = JSON.parse(fs.readFileSync(OUTBOX, 'utf8'));
 let sent = 0;
 for (const mail of outbox) {
@@ -61,10 +64,10 @@ for (const mail of outbox) {
         'Auto-Submitted': 'auto-generated',
       },
     });
-    console.log(`보냄: ${mail.to}`);
+    console.log(`보냄: ${maskEmail(mail.to)}`);
     sent++;
   } catch (e) {
-    console.error(`::warning::${mail.to} 발송 실패 — ${e.message}`);
+    console.error(`::warning::${maskEmail(mail.to)} 발송 실패 — ${e.message}`);
   }
 }
 console.log(`${sent}/${outbox.length}통 발송 완료`);

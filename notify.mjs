@@ -186,12 +186,15 @@ function buildHtml(hits) {
 </div>`;
 }
 
+// 공개 저장소라 Actions 로그를 누구나 읽는다 — 주소를 그대로 찍지 않는다
+const maskEmail = (e) => String(e).replace(/^(.).*(@.*)$/, '$1***$2');
+
 // ── 사람마다 조건이 다르므로 각자에게 맞는 메일을 만든다 ─────────────
 const outbox = [];
 for (const person of people) {
   let hits = fresh.filter(makeMatcher(person.watch));
   if (!hits.length && TEST) hits = fresh.slice(0, 3);
-  console.log(`  ${person.label} ${person.email}: ${hits.length}건`);
+  console.log(`  ${person.label} ${maskEmail(person.email)}: ${hits.length}건`);
   if (!hits.length) continue;
   outbox.push({
     to: person.email,
