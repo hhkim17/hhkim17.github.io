@@ -1,7 +1,7 @@
 // 서울 청약 대시보드 — 프론트엔드
-import * as Sync from './sync.js?v=c1af63ab';
-import * as Std from './standards.js?v=c1af63ab';
-import * as Rank from './rank.js?v=c1af63ab';
+import * as Sync from './sync.js?v=a7a48007';
+import * as Std from './standards.js?v=a7a48007';
+import * as Rank from './rank.js?v=a7a48007';
 
 const $ = (s) => document.querySelector(s);
 // 화면 조각이 하나라도 빠져 있으면(브라우저에 남은 옛 HTML 등) 예외가 나서
@@ -1482,19 +1482,12 @@ $('#fSearchClear').onclick = () => { $('#fSearch').value = ''; filters.q = ''; $
 // 테마 색 — 개인 취향이라 계정에 올리지 않고 이 브라우저에만 둔다
 const swatches = document.querySelectorAll('[data-pick-theme]');
 function paintTheme() {
-  const now = document.documentElement.dataset.theme;
-  for (const b of swatches) {
-    b.setAttribute('aria-pressed', String(now === b.dataset.pickTheme || now === b.dataset.special));
-    b.classList.toggle('special', now === b.dataset.special);
-  }
+  for (const b of swatches) b.setAttribute('aria-pressed', String(b.dataset.pickTheme === document.documentElement.dataset.theme));
 }
 for (const b of swatches) {
-  b.onclick = (e) => {
-    const { pickTheme: plain, special } = b.dataset;
-    // 고른 색을 한 번 더 누르면 특별 테마. 더블클릭의 둘째 클릭(detail 2)이 첫 클릭을 되돌리지 않게 한다
-    const next = special && (e.detail > 1 || document.documentElement.dataset.theme === plain) ? special : plain;
-    document.documentElement.dataset.theme = next;
-    try { localStorage.setItem('cheongyak.theme', next); } catch {}
+  b.onclick = () => {
+    document.documentElement.dataset.theme = b.dataset.pickTheme;
+    try { localStorage.setItem('cheongyak.theme', b.dataset.pickTheme); } catch {}
     paintTheme();
   };
 }
