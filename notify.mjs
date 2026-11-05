@@ -87,7 +87,7 @@ return function matches(l) {
 // 2) 사이트에서 로그인해 알림을 켠 구독자 (Supabase)
 async function subscribers() {
   const list = [];
-  const owner = process.env.MAIL_TO || process.env.MAIL_USERNAME;
+  const owner = process.env.MAIL_TO;   // 없으면 보내지 않는다. 발송 계정은 답장을 안 보는 전용 계정이다
   if (owner) list.push({ email: owner, watch, label: '주인' });
 
   const url = process.env.SUPABASE_URL;
