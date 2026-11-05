@@ -25,7 +25,9 @@ if (!curr) { console.error('빌드 결과가 없습니다.'); process.exit(1); }
 if (!prev && !TEST) { console.log('비교할 이전 스냅샷이 없습니다 — 첫 실행으로 보고 알림을 보내지 않습니다.'); process.exit(0); }
 
 const known = new Set((prev?.listings || []).map((l) => l.id));
-let fresh = (curr.listings || []).filter((l) => !known.has(l.id));
+// 수집이 잠깐 끊겼다 돌아오면 마감된 공고도 목록에 없던 것처럼 보인다 — 접수가 끝난 공고는 새 공고가 아니다
+const today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);   // KST
+let fresh = (curr.listings || []).filter((l) => !known.has(l.id) && !(l.receiptEnd && l.receiptEnd < today));
 console.log(`새 공고 ${fresh.length}건 (전체 ${curr.listings.length}건)`);
 
 if (TEST && !fresh.length) {
