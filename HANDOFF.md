@@ -40,7 +40,7 @@ npm install
 | Supabase URL·공개키 | `public/sync.js` 안 (공개용이라 커밋돼 있음) | 없음 |
 | 카카오 REST 키 | Supabase 대시보드 Auth 설정 | 없음 |
 
-GitHub Secrets 에 들어 있는 것: `APPLYHOME_SERVICE_KEY`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_TO`.
+GitHub Secrets 에 들어 있는 것: `APPLYHOME_SERVICE_KEY`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`. `MAIL_TO` 는 지웠습니다(있으면 그 주소에 `watch.json` 조건으로도 보냅니다).
 **이름만 보이고 값은 다시 볼 수 없습니다.** 잃어버리면 새로 발급해 덮어써야 합니다.
 
 > 인증키를 주고받을 때 메신저나 메일에 그대로 붙이지 마세요. 포털에서 다시 확인하는 쪽이 안전합니다.
