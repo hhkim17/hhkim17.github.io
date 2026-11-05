@@ -193,7 +193,9 @@ const maskEmail = (e) => String(e).replace(/^(.).*(@.*)$/, '$1***$2');
 
 // ── 사람마다 조건이 다르므로 각자에게 맞는 메일을 만든다 ─────────────
 const outbox = [];
-for (const person of people) {
+// shortcut: 지정 시험 발송 때는 다른 사람에게 보내지 않으므로, 그 실행에 진짜 새 공고가 있으면 그들은 놓친다. 잦아지면 시험 전용 작업으로 분리
+const only = TEST && process.env.TEST_ONLY;
+for (const person of only ? people.filter((p) => maskEmail(p.email) === only) : people) {
   let hits = fresh.filter(makeMatcher(person.watch));
   if (!hits.length && TEST) hits = fresh.slice(0, 3);
   console.log(`  ${person.label} ${maskEmail(person.email)}: ${hits.length}건`);

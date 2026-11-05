@@ -9,6 +9,10 @@ on:
         description: '새 공고가 없어도 테스트 메일을 보낸다'
         type: boolean
         default: false
+      test_only:
+        description: '시험 메일을 이 사람에게만 보낸다 (로그에 찍힌 가려진 주소 그대로, 예 a***@gmail.com)'
+        type: string
+        default: ''
   push:
     branches: [main]
     paths-ignore: ['docs/**']
@@ -73,6 +77,7 @@ jobs:
 
       - name: 내 조건에 맞는 새 공고 골라내기
         env:
+          TEST_ONLY: ${{ inputs.test_only }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
