@@ -108,6 +108,13 @@ export function displayName() {
 
 export async function signOut() { await client?.auth.signOut(); }
 
+/** 회원 탈퇴 — 서버의 본인 계정과 설정을 지운다. 되돌릴 수 없다 */
+export async function deleteAccount() {
+  const { error } = await client.rpc('delete_my_account');
+  if (error) throw new Error(error.message);
+  await client.auth.signOut({ scope: 'local' });   // 계정이 이미 없으니 이 기기의 세션만 정리한다
+}
+
 /** 내 설정을 서버에서 가져온다 (없으면 null) */
 export async function pull() {
   if (!client || !currentUser) return null;

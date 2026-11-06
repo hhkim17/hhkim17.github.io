@@ -12,8 +12,8 @@
 
 ```bash
 # 1) 받기 — 공개 저장소라 로그인 없이 됩니다
-git clone https://github.com/hhkim17/seoul-cheongyak.git
-cd seoul-cheongyak
+git clone https://github.com/hhkim17/hhkim17.github.io.git
+cd hhkim17.github.io
 
 # 2) 의존성 (pdfjs-dist 하나뿐입니다)
 npm install
@@ -40,7 +40,7 @@ npm install
 | Supabase URL·공개키 | `public/sync.js` 안 (공개용이라 커밋돼 있음) | 없음 |
 | 카카오 REST 키 | Supabase 대시보드 Auth 설정 | 없음 |
 
-GitHub Secrets 에 들어 있는 것: `APPLYHOME_SERVICE_KEY`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_TO`.
+GitHub Secrets 에 들어 있는 것: `APPLYHOME_SERVICE_KEY`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`. `MAIL_TO` 는 지웠습니다(있으면 그 주소에 `watch.json` 조건으로도 보냅니다).
 **이름만 보이고 값은 다시 볼 수 없습니다.** 잃어버리면 새로 발급해 덮어써야 합니다.
 
 > 인증키를 주고받을 때 메신저나 메일에 그대로 붙이지 마세요. 포털에서 다시 확인하는 쪽이 안전합니다.
@@ -53,7 +53,7 @@ GitHub Secrets 에 들어 있는 것: `APPLYHOME_SERVICE_KEY`, `MAIL_USERNAME`, 
 
 | | 사는 곳 | 하는 일 |
 |---|---|---|
-| 사이트 | GitHub Pages — https://hhkim17.github.io/seoul-cheongyak/ | 사람들이 보는 화면 |
+| 사이트 | GitHub Pages — https://hhkim17.github.io/ | 사람들이 보는 화면 |
 | 데이터 수집 | GitHub Actions `청약 데이터 갱신` | 몇 시간마다 기관에서 공고를 받아 `docs/data/listings.json` 로 커밋 |
 | 메일 알림 | 같은 워크플로의 뒷부분 | 새 공고가 조건에 맞으면 발송 |
 | 로컬 서버 | `./start.sh` | 코드 고칠 때만. 안 띄워도 사이트는 멀쩡함 |
@@ -135,6 +135,8 @@ Settings → Collaborators 에 그 계정을 추가합니다.
 공고는 이어 붙이지 않고, 처음 이어 붙인 시각(`staleFrom`)을 지켜 7일이 지나면 놓습니다
 (`health.mjs` 의 `carryable()`).
 
+**저장소 이름이 `hhkim17.github.io` 인 데는 이유가 있습니다.** 애드센스 인증과 `ads.txt` 는 주소 맨 앞을 보기 때문에, 사이트를 맨 앞 주소로 옮겼습니다. 옛 링크를 넘겨 주는 `docs/seoul-cheongyak/` 는 `build.mjs` 가 만듭니다. 전체 빌드가 `docs/` 를 지우니 거기에 직접 넣은 파일은 사라집니다.
+
 **화면 조각 하나가 전체를 죽일 수 있습니다.** 공고 한 건에서 `analyze()` 가 터져 목록이
 통째로 빈 적이 있습니다. 지금은 실패한 건만 「표시 오류」로 두고 나머지는 삽니다.
 
@@ -151,7 +153,7 @@ Settings → Collaborators 에 그 계정을 추가합니다.
 이어받은 뒤 제대로 돌아가는지 한 번에 보려면:
 
 ```bash
-curl -s https://hhkim17.github.io/seoul-cheongyak/data/listings.json | node -e '
+curl -s https://hhkim17.github.io/data/listings.json | node -e '
 const d=JSON.parse(require("fs").readFileSync(0,"utf8"));
 console.log("공고", d.listings.length, "건 |", new Date(d.builtAt).toLocaleString("ko-KR"));
 console.log("출처 정상", (d.sources||[]).filter(s=>s.state==="ok").length+"/"+(d.sources||[]).length);

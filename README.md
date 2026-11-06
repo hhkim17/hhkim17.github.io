@@ -1,6 +1,6 @@
 # 서울 청약 대시보드
 
-**웹사이트 → https://hhkim17.github.io/seoul-cheongyak/**
+**웹사이트 → https://hhkim17.github.io/**
 
 서울의 청약 공고를 제도별 **코너**로 나눠 보여주고, 일정(D-day)·분양가·임대조건·전용면적·경쟁률·당첨 커트라인을
 한 화면에 모읍니다. 내 조건(가점·예산·면적·특별공급 자격·관심 자치구)에 맞춰 자동으로 순위를 매깁니다.
@@ -97,12 +97,11 @@ cd ~/Desktop/seoul-cheongyak
 조건은 저장소의 [`watch.json`](watch.json)에서 바꿉니다 — 코너, 관심 자치구, 최대 분양가/보증금,
 전용면적 범위, 해당 특별공급. 고쳐서 커밋하면 다음 갱신부터 반영됩니다.
 
-받으려면 저장소 시크릿 세 개가 필요합니다(Gmail 기준).
+보내려면 저장소 시크릿 두 개가 필요합니다(Gmail 기준). 받는 사람은 사이트에서 알림을 켠 구독자입니다.
 
 ```bash
 gh secret set MAIL_USERNAME --body "보내는-지메일@gmail.com"
 gh secret set MAIL_PASSWORD --body "앱-비밀번호-16자리"
-gh secret set MAIL_TO       --body "받을-메일@example.com"
 ```
 
 `MAIL_PASSWORD`는 지메일 로그인 비밀번호가 아니라 [Google 계정 › 앱 비밀번호](https://myaccount.google.com/apppasswords)에서

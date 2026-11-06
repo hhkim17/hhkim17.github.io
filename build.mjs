@@ -40,7 +40,22 @@ const copyAssets = () => {
   // 기준표는 standards.mjs 하나만 고치면 되도록, 화면용 사본을 여기서 만든다
   fs.copyFileSync(path.join(ROOT, 'standards.mjs'), path.join(PUBLIC, 'standards.js'));
   fs.mkdirSync(path.join(OUT, 'data'), { recursive: true });
-  fs.cpSync(PUBLIC, OUT, { recursive: true });
+  for (const f of fs.readdirSync(PUBLIC)) fs.copyFileSync(path.join(PUBLIC, f), path.join(OUT, f));
+  // 옛 주소(/seoul-cheongyak/)로 온 링크를 넘겨 준다. 전체 빌드가 docs/ 를 지우므로 매번 만든다
+  fs.mkdirSync(path.join(OUT, 'seoul-cheongyak'), { recursive: true });
+  fs.writeFileSync(path.join(OUT, 'seoul-cheongyak', 'index.html'), `<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>서울 청약 대시보드</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://hhkim17.github.io/">
+<meta http-equiv="refresh" content="1; url=/">
+<script>location.replace('/' + location.search + location.hash);</script>
+</head>
+<body><p>주소가 바뀌었습니다. <a href="/">서울 청약 대시보드로 이동</a></p></body>
+</html>
+`);
   fs.writeFileSync(path.join(OUT, '.nojekyll'), ''); // _ 로 시작하는 파일도 서빙되게
   return stampAssets();
 };

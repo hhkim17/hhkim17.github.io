@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(ROOT, 'notify');
-const SITE = 'https://hhkim17.github.io/seoul-cheongyak/';
+const SITE = 'https://hhkim17.github.io/';
 
 const read = (p) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; } };
 
@@ -25,7 +25,9 @@ if (!curr) { console.error('빌드 결과가 없습니다.'); process.exit(1); }
 if (!prev && !TEST) { console.log('비교할 이전 스냅샷이 없습니다 — 첫 실행으로 보고 알림을 보내지 않습니다.'); process.exit(0); }
 
 const known = new Set((prev?.listings || []).map((l) => l.id));
-let fresh = (curr.listings || []).filter((l) => !known.has(l.id));
+// 수집이 잠깐 끊겼다 돌아오면 마감된 공고도 목록에 없던 것처럼 보인다 — 접수가 끝난 공고는 새 공고가 아니다
+const today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);   // KST
+let fresh = (curr.listings || []).filter((l) => !known.has(l.id) && !(l.receiptEnd && l.receiptEnd < today));
 console.log(`새 공고 ${fresh.length}건 (전체 ${curr.listings.length}건)`);
 
 if (TEST && !fresh.length) {
@@ -85,7 +87,7 @@ return function matches(l) {
 // 2) 사이트에서 로그인해 알림을 켠 구독자 (Supabase)
 async function subscribers() {
   const list = [];
-  const owner = process.env.MAIL_TO || process.env.MAIL_USERNAME;
+  const owner = process.env.MAIL_TO;   // 없으면 보내지 않는다. 발송 계정은 답장을 안 보는 전용 계정이다
   if (owner) list.push({ email: owner, watch, label: '주인' });
 
   const url = process.env.SUPABASE_URL;
@@ -191,7 +193,9 @@ const maskEmail = (e) => String(e).replace(/^(.).*(@.*)$/, '$1***$2');
 
 // ── 사람마다 조건이 다르므로 각자에게 맞는 메일을 만든다 ─────────────
 const outbox = [];
-for (const person of people) {
+// shortcut: 지정 시험 발송 때는 다른 사람에게 보내지 않으므로, 그 실행에 진짜 새 공고가 있으면 그들은 놓친다. 잦아지면 시험 전용 작업으로 분리
+const only = TEST && process.env.TEST_ONLY;
+for (const person of only ? people.filter((p) => maskEmail(p.email) === only) : people) {
   let hits = fresh.filter(makeMatcher(person.watch));
   if (!hits.length && TEST) hits = fresh.slice(0, 3);
   console.log(`  ${person.label} ${maskEmail(person.email)}: ${hits.length}건`);
