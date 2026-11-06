@@ -13,6 +13,8 @@ import { cacheGet, cacheSet } from './store.mjs';
 export const LIST_TTL = 10 * 60 * 1000;
 export const DETAIL_TTL = 6 * 60 * 60 * 1000;
 export const LOOKBACK_DAYS = Number(process.env.LOOKBACK_DAYS || 540);
+// shortcut: 경기는 공고가 서울의 두 배라 상세 API 호출 한도가 걱정된다. 오래된 당첨 커트라인 비교를 포기한다. 한도에 여유가 있으면 늘린다
+const GYEONGGI_LOOKBACK_DAYS = 120;
 
 export const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
 
@@ -22,25 +24,25 @@ export function daysAgoISO(d) {
 
 // 공급지역명이 있으면 그것만 믿는다. 공급위치 주소에는 지구 경계 설명으로
 // 타 시·도 공고에도 '서울특별시 OO구'가 섞여 들어오기 때문.
-const isSeoul = (row) => {
+const inArea = (row) => {
   const area = String(row.SUBSCRPT_AREA_CODE_NM || '').trim();
-  if (area) return area.includes('서울');
-  return String(row.HSSPLY_ADRES || '').trim().startsWith('서울');
+  if (area) return /서울|경기/.test(area);
+  return /^(서울|경기)/.test(String(row.HSSPLY_ADRES || '').trim());
 };
 
 async function section(label, fn, normalize, retry) {
   try {
     const rows = await fn();
-    const out = rows.filter(isSeoul).map(normalize);
-    log(`  ${label}: 전국 ${rows.length}건 → 서울 ${out.length}건`);
+    const out = rows.filter(inArea).map(normalize);
+    log(`  ${label}: 전국 ${rows.length}건 → 서울·경기 ${out.length}건`);
     return { rows: out, error: null };
   } catch (e) {
     if (retry) {
       log(`  ${label}: 날짜 필터 실패, 전체 조회로 재시도 — ${e.message}`);
       try {
         const rows = await retry();
-        const out = rows.filter(isSeoul).map(normalize);
-        log(`  ${label}: 전국 ${rows.length}건 → 서울 ${out.length}건 (재시도)`);
+        const out = rows.filter(inArea).map(normalize);
+        log(`  ${label}: 전국 ${rows.length}건 → 서울·경기 ${out.length}건 (재시도)`);
         return { rows: out, error: null };
       } catch (e2) { e = e2; }
     }
@@ -52,7 +54,9 @@ async function section(label, fn, normalize, retry) {
 /** LH는 청약홈과 응답 구조가 완전히 달라 따로 다룬다 */
 async function lhSection(key) {
   try {
-    const rows = await LH.lhNotices(key, { months: 14 });
+    const area = (cnpCd, name) => LH.lhNotices(key, { months: 14, cnpCd })
+      .then((rows) => rows.map((r) => ({ ...r, CNP_CD_NM: r.CNP_CD_NM || name })));
+    const rows = [...await area('11', '서울특별시'), ...await area('41', '경기도')];
     const out = rows.map(N.normalizeLh);
     log(`  LH: ${out.length}건`);
     return { rows: out, error: null, blocked: false };
@@ -74,8 +78,8 @@ async function lhSection(key) {
 /** 마이홈포털 통합 공고 — SH·지방공사 물량이 여기로 들어온다 */
 async function myhomeSection(key) {
   const grab = async (label, fn, kindHint) => {
-    const rows = (await fn()).filter(N.myhomeIsSeoul).map((r) => N.normalizeMyhome(r, kindHint));
-    log(`  마이홈 ${label}: 서울 ${rows.length}건`);
+    const rows = (await fn()).filter(N.myhomeInArea).map((r) => N.normalizeMyhome(r, kindHint));
+    log(`  마이홈 ${label}: 서울·경기 ${rows.length}건`);
     return rows;
   };
   try {
@@ -169,10 +173,16 @@ export async function collectListings(key) {
   }
 
   const listings = [...byTitle.values()]
-    .map((l) => ({ ...l, corner: N.cornerOf(l), agency: N.agencyOf(l) }))
+    .map((l) => {
+      const region = N.regionOf(l);
+      // 공고명에서 짐작한 구·시가 지역과 어긋나면 비워 둔다 (필터에서 엉뚱한 곳에 잡히지 않게)
+      const gu = (region === '경기' ? N.GYEONGGI_SI : N.SEOUL_GU).includes(l.gu) ? l.gu : null;
+      return { ...l, region, gu, corner: N.cornerOf(l), agency: N.agencyOf(l) };
+    })
+    .filter((l) => l.region !== '경기' || !l.noticeDate || l.noticeDate >= daysAgoISO(GYEONGGI_LOOKBACK_DAYS) || (l.receiptEnd && l.receiptEnd >= daysAgoISO(0)))
     .sort((a, b) => (b.noticeDate || '').localeCompare(a.noticeDate || ''));
 
-  log(`수집 완료: 서울 ${listings.length}건`);
+  log(`수집 완료: 서울·경기 ${listings.length}건`);
   return { listings, errors, lhBlocked: lh.blocked, myhomeBlocked: mh.blocked, scrapeOk: scraped.ok, standards, fetchedAt: Date.now() };
 }
 

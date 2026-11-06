@@ -6,16 +6,25 @@
 // 기준은 SH 공식 안내에서 확인한 것을 쓴다.
 // https://www.i-sh.co.kr/app/lay2/S48T1587C589/contents.do/
 
-/** 서울 기준 민영주택 청약 예치기준금액(만원) */
+/** 민영주택 청약 예치기준금액(만원). 공고가 아니라 신청자가 사는 곳으로 정해진다 */
 export const DEPOSIT_SEOUL = [
   { maxArea: 85, amount: 300 },
   { maxArea: 102, amount: 600 },
   { maxArea: 135, amount: 1000 },
   { maxArea: Infinity, amount: 1500 },
 ];
+/** 경기도는 특별시·광역시가 아니라 '기타 시·군' 기준이다 */
+export const DEPOSIT_GYEONGGI = [
+  { maxArea: 85, amount: 200 },
+  { maxArea: 102, amount: 300 },
+  { maxArea: 135, amount: 400 },
+  { maxArea: Infinity, amount: 500 },
+];
 
-export const depositFor = (area) =>
-  (DEPOSIT_SEOUL.find((r) => (area ?? 0) <= r.maxArea) ?? DEPOSIT_SEOUL.at(-1)).amount;
+export const depositFor = (area, residence = '서울') => {
+  const table = residence === '경기' ? DEPOSIT_GYEONGGI : DEPOSIT_SEOUL;
+  return (table.find((r) => (area ?? 0) <= r.maxArea) ?? table.at(-1)).amount;
+};
 
 /** 이 공고가 순위를 따지는 유형인가 */
 export function rankKindOf(l) {
@@ -48,7 +57,7 @@ export function judgeRank(l, p, area) {
   // 공고 자료에 이 표시가 들어 있으므로 사용자에게 묻지 않는다.
   const regulated = !!(l.flags?.speculative || l.flags?.regulated);
   const needYears = regulated ? 2 : 1;
-  const needDeposit = depositFor(area);
+  const needDeposit = depositFor(area, p.residence);
   const d = p.depositManwon;
   if (d == null) return { rank: null, label: '예치금 필요', why: '민영주택은 예치금으로 순위를 가립니다.' };
   if (years >= needYears && d >= needDeposit) {

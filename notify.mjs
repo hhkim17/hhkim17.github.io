@@ -46,6 +46,8 @@ const priceCap = manwon(watch['최대분양가_억']);
 const depositCap = manwon(watch['최대보증금_억']);
 const corners = watch['코너'] || [];
 const gus = watch['관심자치구'] || [];
+// 경기를 넣기 전에 구독한 사람은 값이 없다 — 켜지 않은 지역의 메일을 보내지 않는다
+const regions = watch['관심지역']?.length ? watch['관심지역'] : ['서울'];
 const areaMin = watch['전용면적_최소'] ?? 0;
 const areaMax = watch['전용면적_최대'] ?? 9999;
 const specials = watch['해당특별공급'] || [];
@@ -54,6 +56,7 @@ const allowUnpriced = watch['가격정보없어도_알림'] !== false;
 const recruitOnly = watch['모집공고만'] !== false;
 
 return function matches(l) {
+  if (!regions.includes(l.region || '서울')) return false;
   if (corners.length && !corners.includes(l.corner)) return false;
   // 게시판 공고는 '당첨자 발표'·'안내'가 섞인다 — 알림은 모집공고만
   if (recruitOnly && l.noticeKind && l.noticeKind !== '모집') return false;
@@ -202,7 +205,7 @@ for (const person of only ? people.filter((p) => maskEmail(p.email) === only) : 
   if (!hits.length) continue;
   outbox.push({
     to: person.email,
-    subject: `${TEST ? '(테스트) ' : ''}서울 청약 새 공고 ${hits.length}건 · ${hits[0].name.slice(0, 30)}${hits.length > 1 ? ' 외' : ''}`,
+    subject: `${TEST ? '(테스트) ' : ''}서울·경기 청약 새 공고 ${hits.length}건 · ${hits[0].name.slice(0, 30)}${hits.length > 1 ? ' 외' : ''}`,
     html: buildHtml(hits),
     text: buildText(hits),
   });

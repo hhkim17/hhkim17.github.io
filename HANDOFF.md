@@ -36,7 +36,7 @@ npm install
 | 값 | 어디에 있나 | 새 계정이 해야 할 일 |
 |---|---|---|
 | **공공데이터포털 인증키** | 기존 계정의 `config.json` (64자) | 같은 키를 다시 넣거나, [포털 마이페이지](https://www.data.go.kr/iim/api/selectAPIAcountView.do)에서 확인 |
-| GitHub Actions 비밀값 4개 | GitHub 저장소 Settings → Secrets | 이미 등록돼 있음. 건드릴 일 없음 |
+| GitHub Actions 비밀값 5개 | GitHub 저장소 Settings → Secrets | 이미 등록돼 있음. 건드릴 일 없음 |
 | Supabase URL·공개키 | `public/sync.js` 안 (공개용이라 커밋돼 있음) | 없음 |
 | 카카오 REST 키 | Supabase 대시보드 Auth 설정 | 없음 |
 
@@ -99,7 +99,7 @@ Settings → Collaborators 에 그 계정을 추가합니다.
 
 2. **구독자 메일이 동작하지 않습니다.**
    `SUPABASE_URL`·`SUPABASE_SERVICE_KEY` 시크릿이 없어서, 사이트에서 메일을 남긴 사람에게는
-   알림이 가지 않고 `MAIL_TO` 한 명에게만 갑니다. 워크플로 로그에
+   알림이 가지 않습니다. 워크플로 로그에
    `Supabase 설정이 없어 구독자 목록은 건너뜁니다` 로 찍힙니다.
    고치는 법: Supabase 대시보드 → Project Settings → API Keys 의 **secret 키**(`sb_secret_…`)를
    `gh secret set SUPABASE_SERVICE_KEY` 로, 프로젝트 주소를 `SUPABASE_URL` 로 등록합니다.
@@ -136,6 +136,10 @@ Settings → Collaborators 에 그 계정을 추가합니다.
 (`health.mjs` 의 `carryable()`).
 
 **저장소 이름이 `hhkim17.github.io` 인 데는 이유가 있습니다.** 애드센스 인증과 `ads.txt` 는 주소 맨 앞을 보기 때문에, 사이트를 맨 앞 주소로 옮겼습니다. 옛 링크를 넘겨 주는 `docs/seoul-cheongyak/` 는 `build.mjs` 가 만듭니다. 전체 빌드가 `docs/` 를 지우니 거기에 직접 넣은 파일은 사라집니다.
+
+**경기는 호출 한도 때문에 최근 120일 공고만 받습니다.** 공고마다 상세 API를 여러 번 부르고 CI 에는 캐시가 없습니다. 접수 중인 공고는 기간과 상관없이 남깁니다 (`collect.mjs` 의 `GYEONGGI_LOOKBACK_DAYS`). 지역과 예치금 점검은 `node test-region.mjs` 입니다.
+
+**구독자의 기본 지역은 서울입니다.** `관심지역` 값이 없으면 경기 메일을 보내지 않습니다. 이 값을 빼면 경기 공고 전체가 새 공고 메일로 나갑니다.
 
 **화면 조각 하나가 전체를 죽일 수 있습니다.** 공고 한 건에서 `analyze()` 가 터져 목록이
 통째로 빈 적이 있습니다. 지금은 실패한 건만 「표시 오류」로 두고 나머지는 삽니다.

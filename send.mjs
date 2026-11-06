@@ -51,7 +51,7 @@ let sent = 0;
 for (const mail of outbox) {
   try {
     await transport.sendMail({
-      from: `서울 청약 대시보드 <${user}>`,
+      from: `서울·경기 청약 대시보드 <${user}>`,
       to: mail.to,
       subject: mail.subject,
       html: mail.html,
@@ -60,7 +60,7 @@ for (const mail of outbox) {
         // 구독 메일임을 밝히는 표준 헤더 — 스팸 판정을 크게 낮춘다
         'List-Unsubscribe': `<mailto:${user}?subject=unsubscribe>, <https://hhkim17.github.io/>`,
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-        'List-Id': '서울 청약 대시보드 알림 <cheongyak.hhkim17.github.io>',
+        'List-Id': '서울·경기 청약 대시보드 알림 <cheongyak.hhkim17.github.io>',
         'Auto-Submitted': 'auto-generated',
       },
     });

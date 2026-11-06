@@ -6,6 +6,8 @@ export const SEOUL_GU = [
   '용산구','은평구','종로구','중구','중랑구',
 ];
 
+export const GYEONGGI_SI = ['가평군','고양시','과천시','광명시','광주시','구리시','군포시','김포시','남양주시','동두천시','부천시','성남시','수원시','시흥시','안산시','안성시','안양시','양주시','양평군','여주시','연천군','오산시','용인시','의왕시','의정부시','이천시','파주시','평택시','포천시','하남시','화성시'];
+
 const s = (v) => (v == null ? '' : String(v).trim());
 const n = (v) => {
   // '공고문 참조'처럼 숫자가 없는 값은 0이 아니라 '없음'이다
@@ -25,6 +27,8 @@ export function toISO(v) {
 
 export function guFromAddress(addr) {
   const a = s(addr);
+  const gg = a.match(/경기(?:도)?\s*([가-힣]{1,4}[시군])/);
+  if (gg && GYEONGGI_SI.includes(gg[1])) return gg[1];
   // '서울특별시 OO구'를 먼저 찾는다. 지구 경계 설명에 타 시·도가 섞인 주소가 있어
   // 단순 포함 검색만 하면 엉뚱한 구가 잡힌다.
   const m = a.match(/서울(?:특별시)?\s*([가-힣]{2,4}구)/);
@@ -34,7 +38,20 @@ export function guFromAddress(addr) {
   // 청년안심주택은 «대흥역 리마크빌 마포»처럼 '구'를 뗀 지명을 쓴다.
   // 두 글자 이상 어간만 본다 ('중구'의 '중'은 아무 데나 걸린다).
   const stem = SEOUL_GU.filter((g) => g.length >= 3 && a.includes(g.slice(0, -1)));
-  return stem.length === 1 ? stem[0] : null;   // 둘 이상 걸리면 단정하지 않는다
+  if (stem.length) return stem.length === 1 ? stem[0] : null;   // 둘 이상 걸리면 단정하지 않는다
+  // «수원당수 행복주택»처럼 시 이름만 적힌 공고. '남양주'에는 '양주'도 걸리므로 긴 쪽을 남긴다
+  const si = GYEONGGI_SI.filter((g) => a.includes(g.slice(0, -1)));
+  const longest = si.filter((g) => !si.some((o) => o !== g && o.includes(g.slice(0, -1))));
+  return longest.length === 1 ? longest[0] : null;
+}
+
+/** 공고가 서울인지 경기인지. 공급지역명을 먼저 믿고, 없으면 주소와 시 이름으로 가린다 */
+export function regionOf(l) {
+  const area = s(l.areaName), addr = s(l.address);
+  if (area.startsWith('경기')) return '경기';
+  if (area.startsWith('서울')) return addr.startsWith('경기') ? '경기' : '서울';
+  if (addr.startsWith('경기') || GYEONGGI_SI.includes(l.gu)) return '경기';
+  return '서울';
 }
 
 /** '084.9871A' / '59.9800B' → 84.99 (전용면적) */
@@ -466,9 +483,9 @@ export function normalizeMyhome(r, kindHint) {
   };
 }
 
-/** 시도명 또는 주소로 서울 여부를 가린다 */
-export const myhomeIsSeoul = (r) =>
-  /서울/.test(String(r.brtcNm || '')) || String(r.fullAdres || '').startsWith('서울');
+/** 시도명 또는 주소로 서울·경기 여부를 가린다 */
+export const myhomeInArea = (r) =>
+  /서울|경기/.test(String(r.brtcNm || '')) || /^(서울|경기)/.test(String(r.fullAdres || ''));
 
 // ── SH·HUG 게시판 수집분 정규화 ──────────────────────────────────────
 // 서울시 청년안심주택 포털의 민간임대 공고. SH 게시판에는 공공임대분만 올라와서

@@ -1,4 +1,4 @@
-// 서울 청약 대시보드 — 프론트엔드
+// 서울·경기 청약 대시보드 — 프론트엔드
 import * as Sync from './sync.js';
 import * as Std from './standards.js';
 import * as Rank from './rank.js';
@@ -35,6 +35,8 @@ function pyeongPrice(m) {
 }
 
 const SEOUL_GU = ['강남구','강동구','강북구','강서구','관악구','광진구','구로구','금천구','노원구','도봉구','동대문구','동작구','마포구','서대문구','서초구','성동구','성북구','송파구','양천구','영등포구','용산구','은평구','종로구','중구','중랑구'];
+const GYEONGGI_SI = ['가평군','고양시','과천시','광명시','광주시','구리시','군포시','김포시','남양주시','동두천시','부천시','성남시','수원시','시흥시','안산시','안성시','안양시','양주시','양평군','여주시','연천군','오산시','용인시','의왕시','의정부시','이천시','파주시','평택시','포천시','하남시','화성시'];
+const REGIONS = [{ key: '서울', label: '서울' }, { key: '경기', label: '경기' }];
 
 const SPECIAL_TYPES = [
   { key: 'newlywed',   label: '신혼부부',   field: 'newlywed' },
@@ -250,11 +252,14 @@ const DEFAULT_PROFILE = {
   incomeManwon: null, soloIncomeManwon: null, assetManwon: null, soloAssetManwon: null,
   realEstateManwon: null, carManwon: null, dualIncome: false,
   budgetEok: 9, areaMin: 49, areaMax: 99,
-  special: [], gu: [], seoulResident: true,
+  special: [], gu: [], residence: '서울',
   incomeKind: 'work',   // work=근로 · biz=사업(프리랜서) · both
   ownedBefore: false,   // 집을 소유한 적이 있는지 — 무주택 기산일이 달라진다
 };
 let profile = { ...DEFAULT_PROFILE, ...JSON.parse(localStorage.getItem('cheongyak.profile') || '{}') };
+// 예전에는 '서울 거주' 체크만 있었다
+const migrateProfile = (p) => { if (p.seoulResident === false) p.residence = 'other'; delete p.seoulResident; return p; };
+migrateProfile(profile);
 // 예전에 '무주택이 된 날'만 넣어 둔 사람은 집을 소유했던 것으로 본다
 if (profile.ownedBefore === undefined) profile.ownedBefore = !!profile.noHouseSince;
 const saveProfile = () => localStorage.setItem('cheongyak.profile', JSON.stringify(profile));
@@ -295,13 +300,13 @@ function toggleScrap(id) {
 // 메일 알림 조건 — 로컬 서버가 watch.json에 써 주고, 없으면 화면에서 복사
 const DEFAULT_WATCH = {
   '코너': ['apt', 'remnant', 'publicrent', 'lhrent', 'lhsale', 'sh', 'hug'],
-  '관심자치구': [], '최대분양가_억': 12, '최대보증금_억': 5,
+  '관심지역': ['서울'], '관심자치구': [], '최대분양가_억': 12, '최대보증금_억': 5,
   '전용면적_최소': 0, '전용면적_최대': 200,
   '해당특별공급': [], '가격정보없어도_알림': true, '모집공고만': true,
 };
 let watchCfg = { ...DEFAULT_WATCH, ...JSON.parse(localStorage.getItem('cheongyak.watch') || '{}') };
 
-const defaultFilters = () => ({ status: STATUSES.map((s) => s.key), target: [], corner: 'all', gu: [], agency: [], q: '', sort: 'match', budgetOnly: false, eligibleOnly: false, showAnnouncements: false, incomeFitOnly: false, eligibleOnly2: false });
+const defaultFilters = () => ({ status: STATUSES.map((s) => s.key), target: [], corner: 'all', region: [], gu: [], agency: [], q: '', sort: 'match', budgetOnly: false, eligibleOnly: false, showAnnouncements: false, incomeFitOnly: false, eligibleOnly2: false });
 let filters = defaultFilters();
 let listings = [];
 let meta = {};
@@ -332,6 +337,7 @@ function analyze(l) {
     accountYears: accountYearsOf(profile),
     payments: profile.payments,
     depositManwon: profile.depositManwon,
+    residence: profile.residence,
   }, rankArea);
   const reasons = [];
   let score = 0;
@@ -377,7 +383,7 @@ function analyze(l) {
     if (cut != null) {
       const margin = myScore - cut;
       score += Math.max(0, Math.min(40, 19 + margin * 2.4));
-      reasons.push({ t: `내 가점 ${myScore} vs ${profile.seoulResident ? '해당지역' : '기타지역'} 커트라인 ${cut}`, neg: margin < 0 });
+      reasons.push({ t: `내 가점 ${myScore} vs ${isResident(l) ? '해당지역' : '기타지역'} 커트라인 ${cut}`, neg: margin < 0 });
     } else {
       score += 16;
       reasons.push({ t: `내 가점 ${myScore}점` });
@@ -432,28 +438,30 @@ function cmpetAverage(l) {
   return Math.round((rows.reduce((a, b) => a + b, 0) / rows.length) * 10) / 10;
 }
 
-/** 같은 자치구의 최근 당첨 커트라인(최저가점) 중앙값 — 없으면 서울 전체 */
+// shortcut: 경기는 같은 시·군이어야 해당지역인데 '경기 거주'만 묻는다. 시·군까지 판정하려면 거주 시·군을 받아야 한다
+const isResident = (l) => profile.residence === (l.region || '서울');
+/** 같은 구·시의 최근 당첨 커트라인(최저가점) 중앙값 — 없으면 그 지역 전체 */
 let cutlineCache = null;
 function buildCutlines() {
-  const byGu = {}; const all = [];
+  const byGu = {}; const all = { 서울: [], 경기: [] };
   for (const l of listings) {
     for (const r of l.score || []) {
       const v = parseFloat(r.LWET_SCORE);
       if (!Number.isFinite(v) || v <= 0) continue;
-      // 서울 거주자는 해당지역(01), 그 외는 기타지역(02·03) 커트라인과 견준다
-      const want = profile.seoulResident ? '01' : '02';
+      // 그 지역 거주자는 해당지역(01), 그 외는 기타지역(02·03) 커트라인과 견준다
+      const want = isResident(l) ? '01' : '02';
       if (r.RESIDE_SECD && r.RESIDE_SECD !== want) continue;
-      all.push(v);
+      all[l.region || '서울'].push(v);
       if (l.gu) (byGu[l.gu] ||= []).push(v);
     }
   }
   const med = (a) => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); return Math.round(s[Math.floor(s.length / 2)]); };
-  cutlineCache = { byGu: Object.fromEntries(Object.entries(byGu).map(([k, v]) => [k, med(v)])), all: med(all) };
+  cutlineCache = { byGu: Object.fromEntries(Object.entries(byGu).map(([k, v]) => [k, med(v)])), all: { 서울: med(all.서울), 경기: med(all.경기) } };
 }
 function cutlineFor(l) {
   if (!cutlineCache) buildCutlines();
   if (l.gu && cutlineCache.byGu[l.gu] != null) return cutlineCache.byGu[l.gu];
-  return cutlineCache.all;
+  return cutlineCache.all[l.region || '서울'];
 }
 
 // ── 렌더링 ───────────────────────────────────────────────────────────
@@ -532,7 +540,13 @@ function renderFilters() {
   chipRow($('#fTarget'), TARGETS, filters.target, (k) => { toggle(filters.target, k); renderAll(); });
   const agencies = [...new Set(listings.map(agencyOf))].sort().map((a) => ({ key: a, label: a }));
   chipRow($('#fAgency'), agencies, filters.agency, (k) => { toggle(filters.agency, k); renderAll(); });
-  const gus = SEOUL_GU.filter((g) => listings.some((l) => l.gu === g)).map((g) => ({ key: g, label: g }));
+  chipRow($('#fRegion'), REGIONS, filters.region, (k) => {
+    toggle(filters.region, k);
+    filters.gu = filters.gu.filter((g) => !filters.region.length || filters.region.includes(GYEONGGI_SI.includes(g) ? '경기' : '서울'));
+    renderAll();
+  });
+  const shown = (filters.region.length === 1 ? (filters.region[0] === '경기' ? GYEONGGI_SI : SEOUL_GU) : [...SEOUL_GU, ...GYEONGGI_SI]);
+  const gus = shown.filter((g) => listings.some((l) => l.gu === g)).map((g) => ({ key: g, label: g }));
   chipRow($('#fGu'), gus, filters.gu, (k) => { toggle(filters.gu, k); renderAll(); });
   // 자치구가 안 적힌 공고(대부분 SH 게시판 글)는 자치구를 고르면 조용히 빠진다.
   // 몇 건이 빠지는지 알려 주지 않으면 목록이 비어 보이는 이유를 알 수 없다.
@@ -540,7 +554,7 @@ function renderFilters() {
   if (note) {
     const noGu = listings.filter((l) => visibleKind(l) && !l.gu).length;
     note.hidden = !(filters.gu.length && noGu);
-    note.textContent = `자치구가 적히지 않은 공고 ${noGu}건은 이 필터에서 빠집니다.`;
+    note.textContent = `구·시가 적히지 않은 공고 ${noGu}건은 이 필터에서 빠집니다.`;
   }
   $('#fSort').value = filters.sort;
   $('#fBudget').checked = filters.budgetOnly;
@@ -616,7 +630,7 @@ function renderCorners() {
     : pool.filter((l) => cornerOf(l) === key).length;
 
   const tabs = [
-    { key: 'all', label: '전체', icon: '📋', desc: '서울에서 지금 열려 있는 모든 공고입니다.' },
+    { key: 'all', label: '전체', icon: '📋', desc: '서울·경기에서 지금 열려 있는 모든 공고입니다.' },
     { key: 'scrap', label: '스크랩', icon: '⭐', desc: '별표를 눌러 담아 둔 공고입니다. 이 브라우저에 저장됩니다.' },
     ...CORNERS,
   ];
@@ -668,6 +682,7 @@ function visible() {
       if (!passesTarget(l)) return false;
       if (!passesStatus(a)) return false;
       if (filters.corner !== 'all' && cornerOf(l) !== filters.corner) return false;
+      if (filters.region.length && !filters.region.includes(l.region || '서울')) return false;
       if (filters.gu.length && !(l.gu && filters.gu.includes(l.gu))) return false;
       if (filters.budgetOnly && a.pricedCount > 0 && a.affordable === 0) return false;
       if (filters.eligibleOnly && !a.eligibleSpecial.length) return false;
@@ -982,7 +997,7 @@ function openProfile() {
   setVal('#pBudget', profile.budgetEok);
   setVal('#pAreaMin', profile.areaMin);
   setVal('#pAreaMax', profile.areaMax);
-  setChk('#pSeoulResident', profile.seoulResident);
+  $('#pResidence').value = profile.residence;
   try {
     renderProfileChips();
     renderIncomeSrc();
@@ -998,7 +1013,7 @@ function openProfile() {
 // 칩만 다시 그린다 — 입력 중인 숫자 필드 값을 건드리지 않기 위해
 function renderProfileChips() {
   chipRow($('#pSpecial'), SPECIAL_TYPES, profile.special, (k) => { toggle(profile.special, k); renderProfileChips(); });
-  chipRow($('#pGu'), SEOUL_GU.map((g) => ({ key: g, label: g })), profile.gu, (k) => { toggle(profile.gu, k); renderProfileChips(); });
+  chipRow($('#pGu'), [...SEOUL_GU, ...GYEONGGI_SI].map((g) => ({ key: g, label: g })), profile.gu, (k) => { toggle(profile.gu, k); renderProfileChips(); });
 }
 
 function formFromModal() {
@@ -1084,7 +1099,13 @@ function openMail() {
 function renderMailChips() {
   chipRow($('#mCorners'), CORNERS.map((c) => ({ key: c.key, label: `${c.icon} ${c.label}` })),
     watchCfg['코너'], (k) => { toggle(watchCfg['코너'], k); renderMailChips(); });
-  chipRow($('#mGu'), SEOUL_GU.map((g) => ({ key: g, label: g })),
+  chipRow($('#mRegion'), REGIONS, watchCfg['관심지역'], (k) => {
+    toggle(watchCfg['관심지역'], k);
+    watchCfg['관심자치구'] = watchCfg['관심자치구'].filter((g) => watchCfg['관심지역'].includes(GYEONGGI_SI.includes(g) ? '경기' : '서울'));
+    renderMailChips();
+  });
+  const on = watchCfg['관심지역'];
+  chipRow($('#mGu'), [...(on.includes('경기') && on.length === 1 ? [] : SEOUL_GU), ...(on.includes('경기') ? GYEONGGI_SI : [])].map((g) => ({ key: g, label: g })),
     watchCfg['관심자치구'], (k) => { toggle(watchCfg['관심자치구'], k); renderMailChips(); });
 }
 
@@ -1097,6 +1118,7 @@ function collectMail() {
     '전용면적_최대': +$('#mAreaMax').value || 999,
     '가격정보없어도_알림': $('#mUnpriced').checked,
     '모집공고만': true,
+    '관심지역': watchCfg['관심지역'],
   };
 }
 
@@ -1188,7 +1210,7 @@ async function load(refresh = false) {
   const stale = ageMin > 720 ? ' · 갱신이 밀리고 있습니다' : '';
   const auto = STATIC ? '' : (data.autoRefreshMinutes ? ` · ${data.autoRefreshMinutes}분마다 자동 갱신` : '');
   const when = t.toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' });
-  $('#status').textContent = `서울 공고 ${listings.length}건 · ${ago} 갱신${stale}${auto}`;
+  $('#status').textContent = `서울·경기 공고 ${listings.length}건 · ${ago} 갱신${stale}${auto}`;
   $('#status').title = STATIC
     ? `${when} 기준\n예약 실행은 30분 간격으로 걸어 두었지만, GitHub 사정으로 실제로는 보통 2~5시간에 한 번 돕니다.`
     : `${when} 기준`;
@@ -1295,7 +1317,7 @@ async function pullAndApply() {
   const row = await Sync.pull();
   if (!row) { schedulePush(); return '이 계정의 첫 동기화입니다 — 지금 설정을 올렸습니다.'; }
   if (row.profile && Object.keys(row.profile).length) {
-    profile = { ...DEFAULT_PROFILE, ...row.profile };
+    profile = migrateProfile({ ...DEFAULT_PROFILE, ...row.profile });
     saveProfile();
   }
   if (Array.isArray(row.scraps)) { scraps = new Set(row.scraps); saveScraps(); }
@@ -1544,7 +1566,7 @@ $('#pSave').onclick = () => {
     budgetEok: +valOf('#pBudget') || 0,
     areaMin: +valOf('#pAreaMin') || 0,
     areaMax: +valOf('#pAreaMax') || 999,
-    seoulResident: chkOf('#pSeoulResident'),
+    residence: $('#pResidence').value,
     incomeKind: profile.incomeKind,
     ownedBefore: !!profile.ownedBefore,
   };
