@@ -284,8 +284,8 @@ code { background: var(--bg-3); padding: 1px 5px; border-radius: 4px; font-size:
 
 /* ── 레이아웃 ──────────────────────────────── */
 .layout { display: grid; grid-template-columns: 250px 1fr; gap: 20px; padding: 20px; align-items: start; max-width: 1500px; margin: 0 auto; }
-@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .rail { position: static !important; } }
-.rail { position: sticky; top: 72px; display: flex; flex-direction: column; gap: 16px; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .rail { position: static !important; max-height: none !important; overflow: visible !important; } }
+.rail { position: sticky; top: 72px; display: flex; flex-direction: column; gap: 16px; max-height: calc(100dvh - 96px); overflow-y: auto; overscroll-behavior: contain; }
 .filter-group h3 { font-size: 12px; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chips.scroll { max-height: 168px; overflow-y: auto; padding-right: 4px; }
