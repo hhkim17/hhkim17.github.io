@@ -1,7 +1,7 @@
 // 서울·경기 청약 대시보드 — 프론트엔드
-import * as Sync from './sync.js?v=ae59eec7';
-import * as Std from './standards.js?v=ae59eec7';
-import * as Rank from './rank.js?v=ae59eec7';
+import * as Sync from './sync.js?v=26204586';
+import * as Std from './standards.js?v=26204586';
+import * as Rank from './rank.js?v=26204586';
 
 const $ = (s) => document.querySelector(s);
 // 화면 조각이 하나라도 빠져 있으면(브라우저에 남은 옛 HTML 등) 예외가 나서
@@ -306,7 +306,7 @@ const DEFAULT_WATCH = {
 };
 let watchCfg = { ...DEFAULT_WATCH, ...JSON.parse(localStorage.getItem('cheongyak.watch') || '{}') };
 
-const defaultFilters = () => ({ status: STATUSES.map((s) => s.key), target: [], corner: 'all', region: [], gu: [], agency: [], q: '', sort: 'match', budgetOnly: false, eligibleOnly: false, showAnnouncements: false, incomeFitOnly: false, eligibleOnly2: false });
+const defaultFilters = () => ({ status: STATUSES.map((s) => s.key), target: [], corner: 'all', region: REGIONS.map((r) => r.key), gu: [], agency: [], q: '', sort: 'match', budgetOnly: false, eligibleOnly: false, showAnnouncements: false, incomeFitOnly: false, eligibleOnly2: false });
 let filters = defaultFilters();
 let listings = [];
 let meta = {};
@@ -541,8 +541,9 @@ function renderFilters() {
   const agencies = [...new Set(listings.map(agencyOf))].sort().map((a) => ({ key: a, label: a }));
   chipRow($('#fAgency'), agencies, filters.agency, (k) => { toggle(filters.agency, k); renderAll(); });
   chipRow($('#fRegion'), REGIONS, filters.region, (k) => {
+    if (filters.region.length === 1 && filters.region[0] === k) return;   // 둘 다 끄면 빈 목록이라 마지막 하나는 남긴다
     toggle(filters.region, k);
-    filters.gu = filters.gu.filter((g) => !filters.region.length || filters.region.includes(GYEONGGI_SI.includes(g) ? '경기' : '서울'));
+    filters.gu = filters.gu.filter((g) => filters.region.includes(GYEONGGI_SI.includes(g) ? '경기' : '서울'));
     renderAll();
   });
   const shown = (filters.region.length === 1 ? (filters.region[0] === '경기' ? GYEONGGI_SI : SEOUL_GU) : [...SEOUL_GU, ...GYEONGGI_SI]);
@@ -580,6 +581,14 @@ function withinClosedWindow(a) {
   if (a.status.key !== 'done' && a.status.key !== 'docs') return true;
   if (!a.status.until) return false;                    // 마감일을 모르면 오래된 것으로 본다
   return -(dayDiff(a.status.until) ?? 0) <= CLOSED_VISIBLE_DAYS;
+}
+
+/** 지역·구 필터. 구·시는 자기 지역 안에서만 좁힌다 — 수원시를 고른 채 서울을 켜도 서울 공고가 나와야 한다 */
+function passesArea(l) {
+  const region = l.region || '서울';
+  if (!filters.region.includes(region)) return false;
+  const gus = filters.gu.filter((g) => (GYEONGGI_SI.includes(g) ? '경기' : '서울') === region);
+  return !gus.length || gus.includes(l.gu);
 }
 
 function passesStatus(a) {
@@ -622,9 +631,9 @@ const matchesQuery = (l) => {
 
 function renderCorners() {
   const nav = $('#corners'); nav.innerHTML = '';
-  // 상태 필터만 적용한 모수로 코너별 건수를 센다 (탭을 눌러도 숫자가 흔들리지 않게)
+  // 왼쪽 필터를 적용한 모수로 코너별 건수를 센다 (탭을 눌러도 숫자가 흔들리지 않게)
   const pool = listings.filter((l) =>
-    visibleKind(l) && matchesQuery(l) && passesAgency(l) && passesTarget(l) && passesStatus({ status: statusOf(l) }));
+    visibleKind(l) && matchesQuery(l) && passesAgency(l) && passesTarget(l) && passesArea(l) && passesStatus({ status: statusOf(l) }));
   const count = (key) => key === 'all' ? pool.length
     : key === 'scrap' ? listings.filter((l) => scraps.has(l.id)).length
     : pool.filter((l) => cornerOf(l) === key).length;
@@ -682,11 +691,7 @@ function visible() {
       if (!passesTarget(l)) return false;
       if (!passesStatus(a)) return false;
       if (filters.corner !== 'all' && cornerOf(l) !== filters.corner) return false;
-      const region = l.region || '서울';
-      if (filters.region.length && !filters.region.includes(region)) return false;
-      // 지역을 골랐으면 구·시는 그 지역 안에서만 좁힌다 — 수원시를 고른 채 서울을 켜도 서울 공고가 나와야 한다
-      const gus = filters.region.length ? filters.gu.filter((g) => (GYEONGGI_SI.includes(g) ? '경기' : '서울') === region) : filters.gu;
-      if (gus.length && !gus.includes(l.gu)) return false;
+      if (!passesArea(l)) return false;
       if (filters.budgetOnly && a.pricedCount > 0 && a.affordable === 0) return false;
       if (filters.eligibleOnly && !a.eligibleSpecial.length) return false;
       if (filters.incomeFitOnly && a.income?.verdict === 'over') return false;
