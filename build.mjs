@@ -141,7 +141,8 @@ const snapshot = {
   lhBlocked: data.lhBlocked,
   cmpetBlocked: state.cmpetBlocked,
   corners: CORNERS,
-  standards: data.standards,
+  // 공표 페이지가 점검 중이면 표가 빠져 소득 판정이 멈춘다 — 못 읽은 표는 직전 값을 유지한다
+  standards: { ...prev?.standards, ...data.standards },
   sources: markSources(sourceStatus(data), data.listings, verdict.carryKinds),
   health: { checkedAt: Date.now(), issues: [...verdict.issues, ...flaws] },
   listings: data.listings,
