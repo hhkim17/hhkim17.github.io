@@ -682,8 +682,11 @@ function visible() {
       if (!passesTarget(l)) return false;
       if (!passesStatus(a)) return false;
       if (filters.corner !== 'all' && cornerOf(l) !== filters.corner) return false;
-      if (filters.region.length && !filters.region.includes(l.region || '서울')) return false;
-      if (filters.gu.length && !(l.gu && filters.gu.includes(l.gu))) return false;
+      const region = l.region || '서울';
+      if (filters.region.length && !filters.region.includes(region)) return false;
+      // 지역을 골랐으면 구·시는 그 지역 안에서만 좁힌다 — 수원시를 고른 채 서울을 켜도 서울 공고가 나와야 한다
+      const gus = filters.region.length ? filters.gu.filter((g) => (GYEONGGI_SI.includes(g) ? '경기' : '서울') === region) : filters.gu;
+      if (gus.length && !gus.includes(l.gu)) return false;
       if (filters.budgetOnly && a.pricedCount > 0 && a.affordable === 0) return false;
       if (filters.eligibleOnly && !a.eligibleSpecial.length) return false;
       if (filters.incomeFitOnly && a.income?.verdict === 'over') return false;

@@ -7,6 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { GYEONGGI_SI } from './normalize.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(ROOT, 'notify');
@@ -62,7 +63,9 @@ return function matches(l) {
   if (recruitOnly && l.noticeKind && l.noticeKind !== '모집') return false;
   // 자치구를 알 수 없는 공고(게시판 수집분 등)는 지역 필터로 걸러내지 않는다.
   // 걸러 버리면 SH 공고가 통째로 알림에서 빠진다.
-  if (gus.length && l.gu && !gus.includes(l.gu)) return false;
+  // 구·시는 같은 지역 안에서만 좁힌다 — 강남구를 고른 채 경기를 켜도 경기 공고가 와야 한다
+  const gusHere = gus.filter((g) => (GYEONGGI_SI.includes(g) ? '경기' : '서울') === (l.region || '서울'));
+  if (gusHere.length && l.gu && !gusHere.includes(l.gu)) return false;
 
   const models = l.models || [];
   const rental = RENTAL.has(l.kind);
