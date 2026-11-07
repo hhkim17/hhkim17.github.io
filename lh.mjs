@@ -92,6 +92,7 @@ function windows(months, spanDays = 60) {
  */
 export async function lhNotices(serviceKey, { months = 14, cnpCd = SEOUL_CNP_CD, uppCodes = Object.keys(LH_UPP), perPage = 100, maxPages = 3 } = {}) {
   const chunks = [];
+  let failStreak = 0;
   for (const upp of uppCodes) {
     for (const w of windows(months)) {
       try {
@@ -107,9 +108,12 @@ export async function lhNotices(serviceKey, { months = 14, cnpCd = SEOUL_CNP_CD,
           if (got.length < perPage) break;
         }
         chunks.push({ ok: true, rows });
+        failStreak = 0;
       } catch (e) {
         // 활용신청이 안 된 경우는 다시 시도해도 소용없으니 그대로 올린다
         if (e instanceof LhError && e.code === 'NOT_REGISTERED') throw e;
+        // 서버가 죽었을 때 전 구간을 재시도하면 45분이 걸린다. 통째로 실패 처리해 직전 자료로 메우게 한다
+        if (++failStreak >= 3) throw e;
         chunks.push({ ok: false, rows: [], error: e });
       }
     }

@@ -69,7 +69,8 @@ export function assess(prev, next) {
   }
   // 0이 된 것뿐 아니라 '거의 다 사라진' 것도 고장으로 본다. 청약홈이 42건을
   // 3건으로 돌려준 적이 있는데, 0이 아니라는 이유로 그냥 통과했다.
-  const dead = Object.keys(pb).filter((k) => pb[k] >= VANISH_MIN && !nb[k]);
+  // 접수 중인 것이 몇 건뿐이어도 마감 포함 건수가 많으면 고장이다. 무순위 122건(접수 중 소수)이 조용히 사라진 적이 있다.
+  const dead = Object.keys(pb).filter((k) => allPb[k] >= VANISH_MIN && !nb[k]);
   const crippled = Object.keys(pb).filter((k) => pb[k] >= 20 && nb[k] && nb[k] < pb[k] * 0.3);
   const broken = [...dead, ...crippled];
 
